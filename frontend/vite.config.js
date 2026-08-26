@@ -5,6 +5,10 @@ import path from 'path'
 export default defineConfig({
   plugins: [vue()],
 
+  test: {
+    environment: 'jsdom'
+  },
+
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src')
@@ -24,12 +28,12 @@ export default defineConfig({
         target: 'http://localhost:8000',
         changeOrigin: true
       },
+
       '/api': {
-       target: 'http://localhost:8000',
+        target: 'http://localhost:8000',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '')
-}
-      
+      }
     }
   }
 })

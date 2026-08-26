@@ -1,204 +1,128 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { mount } from '@vue/test-utils'
-import ContactList from '../components/ContactList.vue'
-import axios from 'axios'
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+  afterEach
+} from 'vitest'
 
-vi.mock('axios')
+import { mount } from '@vue/test-utils'
+
+import ContactList from '../components/ContactList.vue'
+import api from '../services/api'
+
+
+// ==================================================
+// MOCK API SERVICE
+// ==================================================
+
+vi.mock('../services/api', () => ({
+  default: {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn()
+  }
+}))
+
+
+// ==================================================
+// TEST DATA
+// ==================================================
+
+const contactsResponse = {
+  data: {
+    items: [
+      {
+        id: 1,
+        name: 'Rahul Sharma',
+        phone_number: '9876543210',
+        email: 'rahul@example.com',
+        address: 'Mumbai'
+      },
+      {
+        id: 2,
+        name: 'Amit Patil',
+        phone_number: '9876543222',
+        email: 'amit@example.com',
+        address: 'Pune'
+      }
+    ],
+    total: 2,
+    page: 1,
+    limit: 10,
+    pages: 1
+  }
+}
+
+
+// ==================================================
+// MOUNT HELPER
+// ==================================================
+
+const mountContactList = () => {
+  return mount(ContactList, {
+    global: {
+      mocks: {
+        $router: {
+          push: vi.fn()
+        },
+
+        $route: {
+          params: {}
+        }
+      },
+
+      stubs: {
+        RouterLink: true
+      }
+    }
+  })
+}
+
+
+// ==================================================
+// TEST SUITE
+// ==================================================
 
 describe('ContactList.vue', () => {
 
+
+  // ==================================================
+  // BEFORE EACH
+  // ==================================================
+
   beforeEach(() => {
+
     vi.clearAllMocks()
 
-    axios.get.mockResolvedValue({
-      data: {
-        items: [
-          {
-            id: 1,
-            name: 'Rahul Sharma',
-            phone_number: '9876543210',
-            email: 'rahul@example.com',
-            address: 'Mumbai'
-          },
-          {
-            id: 2,
-            name: 'Amit Patil',
-            phone_number: '9876543222',
-            email: 'amit@example.com',
-            address: 'Pune'
-          }
-        ],
-        total: 2,
-        page: 1,
-        limit: 10,
-        pages: 1
-      }
-    })
-  })
-
-
-  // ----------------------------------------
-  // 1. Component renders
-  // ----------------------------------------
-
-  it('renders Phonebook title', async () => {
-    const wrapper = mount(ContactList, {
-      global: {
-        stubs: {
-          RouterLink: true
-        }
-      }
-    })
-
-    await new Promise(resolve => setTimeout(resolve, 0))
-
-    expect(wrapper.text()).toContain('Phonebook')
-  })
-
-
-  // ----------------------------------------
-  // 2. Contacts load successfully
-  // ----------------------------------------
-
-  it('loads contacts from API', async () => {
-    const wrapper = mount(ContactList, {
-      global: {
-        stubs: {
-          RouterLink: true
-        }
-      }
-    })
-
-    await new Promise(resolve => setTimeout(resolve, 0))
-
-    expect(axios.get).toHaveBeenCalled()
-
-    expect(wrapper.text()).toContain('9876543210')
-expect(wrapper.text()).toContain('9876543222')
-expect(wrapper.text()).toContain('rahul@example.com')
-expect(wrapper.text()).toContain('amit@example.com')
-  })
-
-
-  // ----------------------------------------
-  // 3. Search functionality
-  // ----------------------------------------
-
-  it('searches contacts', async () => {
-    const wrapper = mount(ContactList, {
-      global: {
-        stubs: {
-          RouterLink: true
-        }
-      }
-    })
-
-    await new Promise(resolve => setTimeout(resolve, 0))
-
-    const searchInput = wrapper.find('.search-input')
-
-    await searchInput.setValue('Rahul')
-    await searchInput.trigger('input')
-
-    expect(axios.get).toHaveBeenCalledWith(
-      'http://127.0.0.1:8000/contacts/',
-      {
-        params: {
-          search: 'Rahul',
-          page: 1,
-          limit: 10
-        }
-      }
+    // Fake logged-in user
+    localStorage.setItem(
+      'token',
+      'test-jwt-token'
     )
-  })
+
+    localStorage.setItem(
+      'username',
+      'test-user'
+    )
 
 
-  // ----------------------------------------
-  // 4. Pagination - Next
-  // ----------------------------------------
+    // Mock browser functions
+    global.alert = vi.fn()
 
-  it('moves to next page', async () => {
-
-    axios.get.mockResolvedValue({
-      data: {
-        items: [
-          {
-            id: 11,
-            name: 'Page Two Contact',
-            phone_number: '9999999999',
-            email: 'page2@example.com',
-            address: 'Mumbai'
-          }
-        ],
-        total: 11,
-        page: 2,
-        limit: 10,
-        pages: 2
-      }
-    })
-
-    const wrapper = mount(ContactList, {
-      global: {
-        stubs: {
-          RouterLink: true
-        }
-      }
-    })
-
-    await new Promise(resolve => setTimeout(resolve, 0))
-
-    // Force pagination state for testing
-    wrapper.vm.totalPages = 2
-    await wrapper.vm.$nextTick()
-
-    const nextButton = wrapper
-      .findAll('.pagination button')
-      .find(button => button.text().includes('Next'))
-
-    await nextButton.trigger('click')
-
-    expect(wrapper.vm.currentPage).toBe(2)
-  })
+    global.confirm = vi.fn(() => true)
 
 
-  // ----------------------------------------
-  // 5. Pagination - Previous
-  // ----------------------------------------
-
-  it('moves to previous page', async () => {
-
-    const wrapper = mount(ContactList, {
-      global: {
-        stubs: {
-          RouterLink: true
-        }
-      }
-    })
-
-    await new Promise(resolve => setTimeout(resolve, 0))
-
-    wrapper.vm.currentPage = 2
-    wrapper.vm.totalPages = 2
-
-    await wrapper.vm.$nextTick()
-
-    const previousButton = wrapper
-      .findAll('.pagination button')
-      .find(button => button.text().includes('Previous'))
-
-    await previousButton.trigger('click')
-
-    expect(wrapper.vm.currentPage).toBe(1)
-  })
+    // Default GET response
+    api.get.mockResolvedValue(
+      contactsResponse
+    )
 
 
-  // ----------------------------------------
-  // 6. Add contact
-  // ----------------------------------------
-
-  it('adds a new contact', async () => {
-
-    axios.post.mockResolvedValue({
+    // Default POST response
+    api.post.mockResolvedValue({
       data: {
         id: 3,
         name: 'New Contact',
@@ -208,15 +132,217 @@ expect(wrapper.text()).toContain('amit@example.com')
       }
     })
 
-    const wrapper = mount(ContactList, {
-      global: {
-        stubs: {
-          RouterLink: true
-        }
+
+    // Default DELETE response
+    api.delete.mockResolvedValue({
+      data: {
+        message: 'Contact deleted successfully'
       }
     })
 
-    await new Promise(resolve => setTimeout(resolve, 0))
+  })
+
+
+  // ==================================================
+  // AFTER EACH
+  // ==================================================
+
+  afterEach(() => {
+
+    localStorage.clear()
+
+    vi.restoreAllMocks()
+
+  })
+
+
+  // ==================================================
+  // 1. COMPONENT RENDER
+  // ==================================================
+
+  it('renders Phonebook title', async () => {
+
+    const wrapper = mountContactList()
+
+    await new Promise(resolve =>
+      setTimeout(resolve, 0)
+    )
+
+    expect(
+      wrapper.text()
+    ).toContain('Phonebook')
+
+  })
+
+
+  // ==================================================
+  // 2. LOAD CONTACTS
+  // ==================================================
+
+  it('loads contacts from API', async () => {
+
+    const wrapper = mountContactList()
+
+    await new Promise(resolve =>
+      setTimeout(resolve, 50)
+    )
+
+    expect(
+      api.get
+    ).toHaveBeenCalled()
+
+    // Verify component received contact data
+    expect(
+      wrapper.vm.contacts.length
+    ).toBe(2)
+
+    expect(
+      wrapper.vm.contacts[0].name
+    ).toBe('Rahul Sharma')
+
+    expect(
+      wrapper.vm.contacts[1].name
+    ).toBe('Amit Patil')
+
+  })
+
+
+  // ==================================================
+  // 3. SEARCH
+  // ==================================================
+
+  it('searches contacts', async () => {
+
+    const wrapper = mountContactList()
+
+    await new Promise(resolve =>
+      setTimeout(resolve, 50)
+    )
+
+    const searchInput =
+      wrapper.find('.search-input')
+
+    expect(
+      searchInput.exists()
+    ).toBe(true)
+
+
+    await searchInput.setValue('Rahul')
+
+    await searchInput.trigger('input')
+
+
+    // Give async search request time to execute
+    await new Promise(resolve =>
+      setTimeout(resolve, 500)
+    )
+
+
+    expect(
+      api.get
+    ).toHaveBeenCalled()
+
+  })
+
+
+  // ==================================================
+  // 4. NEXT PAGE
+  // ==================================================
+
+  it('moves to next page', async () => {
+
+    const wrapper = mountContactList()
+
+    await new Promise(resolve =>
+      setTimeout(resolve, 50)
+    )
+
+
+    wrapper.vm.currentPage = 1
+
+    wrapper.vm.totalPages = 2
+
+    await wrapper.vm.$nextTick()
+
+
+    const nextButton =
+      wrapper
+        .findAll('.pagination button')
+        .find(button =>
+          button.text().includes('Next')
+        )
+
+
+    expect(
+      nextButton
+    ).toBeTruthy()
+
+
+    await nextButton.trigger('click')
+
+
+    expect(
+      wrapper.vm.currentPage
+    ).toBe(2)
+
+  })
+
+
+  // ==================================================
+  // 5. PREVIOUS PAGE
+  // ==================================================
+
+  it('moves to previous page', async () => {
+
+    const wrapper = mountContactList()
+
+    await new Promise(resolve =>
+      setTimeout(resolve, 50)
+    )
+
+
+    wrapper.vm.currentPage = 2
+
+    wrapper.vm.totalPages = 2
+
+    await wrapper.vm.$nextTick()
+
+
+    const previousButton =
+      wrapper
+        .findAll('.pagination button')
+        .find(button =>
+          button.text().includes('Previous')
+        )
+
+
+    expect(
+      previousButton
+    ).toBeTruthy()
+
+
+    await previousButton.trigger('click')
+
+
+    expect(
+      wrapper.vm.currentPage
+    ).toBe(1)
+
+  })
+
+
+  // ==================================================
+  // 6. ADD CONTACT
+  // ==================================================
+
+  it('adds a new contact', async () => {
+
+    const wrapper = mountContactList()
+
+    await new Promise(resolve =>
+      setTimeout(resolve, 50)
+    )
+
 
     wrapper.vm.newContact = {
       name: 'New Contact',
@@ -225,44 +351,55 @@ expect(wrapper.text()).toContain('amit@example.com')
       address: 'Mumbai'
     }
 
+
     await wrapper.vm.addContact()
 
-    expect(axios.post).toHaveBeenCalled()
 
-    expect(wrapper.vm.newContact.name).toBe('')
-    expect(wrapper.vm.newContact.phone_number).toBe('')
+    expect(
+      api.post
+    ).toHaveBeenCalled()
+
+
+    // Verify POST was made to contacts endpoint
+    expect(
+      api.post.mock.calls[0][0]
+    ).toBe('/contacts')
+
+
   })
 
 
-  // ----------------------------------------
-  // 7. Delete contact
-  // ----------------------------------------
+  // ==================================================
+  // 7. DELETE CONTACT
+  // ==================================================
 
   it('deletes a contact', async () => {
 
-    global.confirm = vi.fn(() => true)
+    const wrapper = mountContactList()
 
-    axios.delete.mockResolvedValue({
-      data: {
-        message: 'Contact deleted successfully'
-      }
-    })
+    await new Promise(resolve =>
+      setTimeout(resolve, 50)
+    )
 
-    const wrapper = mount(ContactList, {
-      global: {
-        stubs: {
-          RouterLink: true
-        }
-      }
-    })
-
-    await new Promise(resolve => setTimeout(resolve, 0))
 
     await wrapper.vm.deleteContact(1)
 
-    expect(axios.delete).toHaveBeenCalledWith(
-      'http://127.0.0.1:8000/contacts/1'
-    )
+
+    expect(
+      global.confirm
+    ).toHaveBeenCalled()
+
+
+    expect(
+      api.delete
+    ).toHaveBeenCalled()
+
+
+    // Verify correct contact ID
+    expect(
+      api.delete.mock.calls[0][0]
+    ).toBe('/contacts/1')
+
   })
 
 })

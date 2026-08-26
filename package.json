@@ -1,0 +1,23 @@
+{
+  "name": "phonebook-java",
+  "version": "1.0.0",
+  "description": "A production-style full-stack Phonebook Application built using **Vue.js 3, FastAPI, PostgreSQL, SQLAlchemy, Axios, Docker, and Docker Compose**.",
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/prasadattarde25-art/phonebook-java.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/prasadattarde25-art/phonebook-java/issues"
+  },
+  "homepage": "https://github.com/prasadattarde25-art/phonebook-java#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^26.3.0"
+  }
+}

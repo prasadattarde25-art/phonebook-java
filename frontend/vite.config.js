@@ -24,12 +24,24 @@ export default defineConfig({
     ],
 
     proxy: {
-      '/contacts': {
+      // ==============================
+      // AUTH
+      // /api/auth/login
+      //       ↓
+      // backend /api/auth/login
+      // ==============================
+      '/api/auth': {
         target: 'http://localhost:8000',
         changeOrigin: true
       },
 
-      '/api': {
+      // ==============================
+      // CONTACTS
+      // /api/contacts
+      //       ↓
+      // /contacts
+      // ==============================
+      '/api/contacts': {
         target: 'http://localhost:8000',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '')

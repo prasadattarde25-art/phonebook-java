@@ -11,10 +11,15 @@ on:
       - main
       - master
 
+
 jobs:
 
+  # ==================================================
+  # JAVA SPRING BOOT BACKEND TESTS
+  # ==================================================
+
   backend-tests:
-    name: Backend Tests
+    name: Java Backend Tests
     runs-on: ubuntu-latest
 
     services:
@@ -40,32 +45,51 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
         with:
-          python-version: "3.11"
+          distribution: temurin
+          java-version: "21"
+          cache: maven
 
-      - name: Install backend dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r backend/requirements.txt
 
-      - name: Run backend tests
+      - name: Make Maven wrapper executable
+        working-directory: backend-java
+        run: chmod +x mvnw
+
+
+      - name: Run Spring Boot tests
+        working-directory: backend-java
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/phonebook
-        run: |
-          cd backend
-          python -m pytest app/tests -v
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/phonebook
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: postgres
+        run: ./mvnw -B test
 
+
+      - name: Build Spring Boot application
+        working-directory: backend-java
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/phonebook
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: postgres
+        run: ./mvnw -B clean package -DskipTests
+
+
+  # ==================================================
+  # VUE FRONTEND TESTS
+  # ==================================================
 
   frontend-tests:
-    name: Frontend Tests
+    name: Vue Frontend Tests
     runs-on: ubuntu-latest
 
     steps:
 
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
+
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -74,13 +98,16 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
+
       - name: Install frontend dependencies
         working-directory: frontend
-        run: npm ci
+        run: npm install
+
 
       - name: Run frontend tests
         working-directory: frontend
         run: npm run test -- --run
+
 
       - name: Build frontend
         working-directory: frontend

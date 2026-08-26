@@ -1,692 +1,343 @@
 # Phonebook Application
 
-A production-style full-stack Phonebook Application built using **Vue.js 3, FastAPI, PostgreSQL, SQLAlchemy, Axios, Docker, and Docker Compose**.
+A production-style full-stack Phonebook Application built with **Vue.js
+3, Java Spring Boot, Spring Security, JWT, PostgreSQL, JPA/Hibernate,
+Axios, Docker, and Docker Compose**.
 
-The application provides a complete contact-management workflow with RESTful CRUD APIs, persistent PostgreSQL storage, frontend-backend integration, validation, API documentation, and containerized development.
+## Architecture
 
----
-
-##   Project Demo
-
-▶️ **[Watch the Complete Project Demo](https://www.youtube.com/watch?v=6afFIaAIQRk)**
-
-The demo covers:
-- Application UI
-- CRUD operations
-- Search and pagination
-- REST APIs
-- Swagger / OpenAPI
-- Docker
-- ngrok public URL
-
----
-
-## 1. Project Overview
-
-The application is designed as a three-tier architecture:
-
-```text
-                    USER
-                      │
-                      ▼
-              ┌───────────────┐
-              │   Vue.js 3    │
-              │   Frontend    │
-              └───────┬───────┘
-                      │
-                Axios / HTTP
-                      │
-                      ▼
-              ┌───────────────┐
-              │    FastAPI    │
-              │    Backend    │
-              └───────┬───────┘
-                      │
-                  SQLAlchemy
-                      │
-                      ▼
-              ┌───────────────┐
-              │  PostgreSQL   │
-              │    Database   │
-              └───────────────┘
+``` text
+Vue.js 3 (:5173)
+      |
+    Axios
+      |
+Spring Boot REST API (:8000)
+      |
+Spring Security + JWT
+      |
+Spring Data JPA / Hibernate
+      |
+PostgreSQL 16 (:5432)
 ```
 
-All services are containerized and managed using **Docker Compose**.
+## Features
 
----
+-   JWT-based login and authentication
+-   Contact CRUD operations
+-   Contact detail view
+-   Search
+-   Pagination
+-   Duplicate phone/email validation
+-   PostgreSQL persistence
+-   Dockerized frontend, Java backend, and database
+-   Playwright end-to-end tests
+-   ngrok public demonstration support
 
-# 2. Business Objective
+## Technology Stack
 
-The goal of the application is to provide a simple and reliable system for managing contact information.
+  Layer             Technology
+  ----------------- -----------------------------
+  Frontend          Vue.js 3
+  Routing           Vue Router
+  HTTP Client       Axios
+  Backend           Java Spring Boot
+  Security          Spring Security + JWT
+  ORM               Spring Data JPA / Hibernate
+  Database          PostgreSQL 16
+  Build             Maven
+  Containers        Docker + Docker Compose
+  Testing           Playwright
+  Version Control   Git / GitHub
 
-Users can:
+## REST API
 
-* Create contacts
-* View all contacts
-* View individual contact details
-* Update existing contacts
-* Delete contacts
-* Persist contact information in PostgreSQL
+### Authentication
 
-The project demonstrates a complete **Frontend → REST API → Database** workflow.
-
----
-
-# 3. Technology Stack
-
-| Layer             | Technology        | Purpose                        |
-| ----------------- | ----------------- | ------------------------------ |
-| Frontend          | Vue.js 3          | User interface                 |
-| Routing           | Vue Router        | Client-side navigation         |
-| HTTP Client       | Axios             | Frontend-backend communication |
-| Backend           | FastAPI           | REST API development           |
-| Language          | Python            | Backend implementation         |
-| ORM               | SQLAlchemy        | Database interaction           |
-| Database          | PostgreSQL        | Persistent data storage        |
-| API Documentation | Swagger / OpenAPI | API testing and documentation  |
-| Containerization  | Docker            | Application isolation          |
-| Orchestration     | Docker Compose    | Multi-service management       |
-| Version Control   | Git               | Source-code management         |
-
----
-
-# 4. Core Features
-
-## Contact Management
-
-The application supports complete CRUD operations:
-
-* **Create** a new contact
-* **Read** all contacts
-* **Read** individual contact details
-* **Update** contact information
-* **Delete** contacts with confirmation
-
-## Contact Information
-
-Each contact contains:
-
-```text
-ID
-Name
-Phone Number
-Email
-Address
-Created Timestamp
+``` text
+POST /api/auth/login
 ```
 
-## Frontend
+The login endpoint accepts `application/x-www-form-urlencoded`
+parameters:
 
-The Vue.js application provides:
-
-* Contact list
-* Contact detail page
-* Create contact form
-* Update contact functionality
-* Delete confirmation
-* Client-side routing
-* Axios API integration
-
-## Backend
-
-The FastAPI backend provides:
-
-* RESTful API
-* CRUD operations
-* Request validation
-* SQLAlchemy integration
-* PostgreSQL connectivity
-* Swagger/OpenAPI documentation
-
----
-
-# 5. REST API Design
-
-| Method | Endpoint         | Purpose                     |
-| ------ | ---------------- | --------------------------- |
-| GET    | `/contacts/`     | Retrieve all contacts       |
-| POST   | `/contacts/`     | Create a contact            |
-| GET    | `/contacts/{id}` | Retrieve a specific contact |
-| PUT    | `/contacts/{id}` | Update a contact            |
-| DELETE | `/contacts/{id}` | Delete a contact            |
-
-### API Documentation
-
-After starting the application:
-
-```text
-http://localhost:8000/docs
+``` text
+username=admin
+password=admin123
 ```
 
-OpenAPI specification:
+Successful response:
 
-```text
-http://localhost:8000/openapi.json
+``` json
+{
+  "access_token": "<JWT_TOKEN>",
+  "token_type": "bearer"
+}
 ```
 
-Swagger UI can be used to test the APIs without requiring an external API client.
+### Contacts
 
----
+  Method   Endpoint           Purpose
+  -------- ------------------ --------------------------------------
+  GET      `/contacts/`       List contacts with search/pagination
+  POST     `/contacts/`       Create contact
+  GET      `/contacts/{id}`   Get one contact
+  PUT      `/contacts/{id}`   Update contact
+  DELETE   `/contacts/{id}`   Delete contact
 
-# 6. Project Architecture
+Protected contact requests use:
 
-```text
-Phonebook Application
-│
-├── Frontend
-│   └── Vue.js 3
-│       ├── Components
-│       ├── Router
-│       └── Axios
-│
-├── Backend
-│   └── FastAPI
-│       ├── Routes
-│       ├── Schemas
-│       ├── Models
-│       └── Database Layer
-│
-└── Database
-    └── PostgreSQL
-        └── Contact Data
+``` text
+Authorization: Bearer <JWT_TOKEN>
 ```
 
-### Request Flow
+Search/pagination example:
 
-For example, when a user creates a contact:
-
-```text
-User
-  │
-  ▼
-Vue.js Form
-  │
-  ▼
-Axios
-  │
-  ▼
-POST /contacts/
-  │
-  ▼
-FastAPI
-  │
-  ▼
-Request Validation
-  │
-  ▼
-SQLAlchemy
-  │
-  ▼
-PostgreSQL
-  │
-  ▼
-Response
-  │
-  ▼
-Vue.js UI
+``` text
+GET /contacts/?search=java&page=1&limit=10
 ```
 
-This separation keeps the frontend, business/API layer, and database responsibilities independent.
+## Project Structure
 
----
-
-# 7. Project Structure
-
-```text
-Phonebook-app/
-│
-├── backend/
-│   ├── app/
-│   │   ├── __init__.py
-│   │   ├── main.py
-│   │   ├── database.py
-│   │   ├── models.py
-│   │   ├── routes.py
-│   │   └── schemas.py
-│   │
-│   ├── Dockerfile
-│   └── requirements.txt
-│
-├── frontend/
+``` text
+phonebook-java/
+├── backend/                 # Original Python backend retained during migration
+├── backend-java/            # Active Java Spring Boot backend
 │   ├── src/
-│   │   ├── components/
-│   │   │   └── ContactList.vue
-│   │   ├── router/
-│   │   │   └── index.js
-│   │   ├── App.vue
-│   │   ├── ContactDetail.vue
-│   │   ├── main.js
-│   │   └── style.css
-│   │
 │   ├── Dockerfile
-│   └── package.json
-│
+│   ├── pom.xml
+│   ├── mvnw
+│   └── mvnw.cmd
+├── frontend/
+│   └── src/
+├── tests/                   # Playwright tests
 ├── docker-compose.yml
 ├── .env
-├── .gitignore
+├── package.json
+├── playwright.config.js
 └── README.md
 ```
 
----
+The active Docker Compose backend is `backend-java`.
 
-# 8. Docker Architecture
+## Docker Compose
 
-Docker Compose manages three independent services:
+Three services are managed by Docker Compose:
 
-```text
-                    Docker Compose
-                          │
-          ┌───────────────┼───────────────┐
-          │               │               │
-          ▼               ▼               ▼
-     Frontend          Backend         Database
-     Vue.js            FastAPI        PostgreSQL
-     :5173             :8000          :5432
+  Service    Technology                Port
+  ---------- ----------------------- ------
+  frontend   Vue.js / Vite             5173
+  backend    Spring Boot / Java 21     8000
+  db         PostgreSQL 16             5432
+
+The Java backend connects to PostgreSQL through the Docker service name:
+
+``` text
+db:5432
 ```
 
-### Services
+PostgreSQL data is persisted in the `postgres_data` named volume.
 
-| Service  | Technology | Port |
-| -------- | ---------- | ---- |
-| frontend | Vue.js     | 5173 |
-| backend  | FastAPI    | 8000 |
-| db       | PostgreSQL | 5432 |
+## Environment
 
-The backend communicates with PostgreSQL using the Docker Compose service name:
+Create a local `.env` file:
 
-```text
-db
-```
-
-This allows services to communicate through the Docker Compose network without depending on `localhost` between containers.
-
----
----
-
-
-# 9. Environment Configuration
-
-Database configuration is provided through environment variables.
-
-Example:
-
-```env
+``` env
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=YOUR_PASSWORD
 POSTGRES_DB=phonebook
 ```
 
-Sensitive credentials should never be committed to Git.
+Do not commit real credentials.
 
-The `.env` file should remain local, while `.env.example` can be committed as a template.
+## Prerequisites
 
----
+-   Docker Desktop
+-   Git
+-   Node.js
+-   Java 21 for local Java development
 
-# 10. Prerequisites
+Check Docker:
 
-Install:
-
-* Docker Desktop
-* Git
-* Node.js
-* Python 3.11+
-
-Verify Docker:
-
-```powershell
+``` powershell
 docker --version
-```
-
-Verify Docker Compose:
-
-```powershell
 docker compose version
 ```
 
----
+Check Java:
 
-# 11. Run the Application
-
-## Step 1 — Open the project
-
-```powershell
-cd Phonebook-app
+``` powershell
+java -version
 ```
 
-Verify that the project contains:
+## Run with Docker
 
-```text
-docker-compose.yml
-backend/
-frontend/
-.env
-README.md
-```
+From the project root:
 
-## Step 2 — Start Docker Desktop
-
-Make sure Docker Desktop is running.
-
-## Step 3 — Build and start all services
-
-```powershell
+``` powershell
 docker compose up -d --build
 ```
 
-This command:
+Verify:
 
-1. Builds the frontend image
-2. Builds the backend image
-3. Starts PostgreSQL
-4. Creates the Docker network
-5. Starts all application services
-
-## Step 4 — Verify services
-
-```powershell
+``` powershell
 docker compose ps
 ```
 
-Expected services:
+View Java backend logs:
 
-```text
+``` powershell
+docker compose logs -f backend
+```
+
+Expected containers:
+
+``` text
 phonebook-frontend
 phonebook-backend
 phonebook-db
 ```
 
-All services should show a running/healthy state according to the configured Docker health checks.
+## Application URLs
 
----
+Frontend:
 
-# 12. Application URLs
-
-### Frontend
-
-```text
+``` text
 http://localhost:5173
 ```
 
-### Backend
+Backend:
 
-```text
+``` text
 http://localhost:8000
 ```
 
-### Swagger API Documentation
+The backend is a REST API; use the controller-defined endpoints listed
+above.
 
-```text
-http://localhost:8000/docs
+## ngrok Public Demo
+
+Start the application first:
+
+``` powershell
+docker compose up -d --build
 ```
 
-### OpenAPI Specification
+Then expose the frontend:
 
-```text
-http://localhost:8000/openapi.json
-```
-
----
-
-# 13. Public Access with ngrok
-
-For demonstration and testing purposes, the Phonebook Application can be exposed to the internet using **ngrok**.
-
-ngrok creates a secure public tunnel to the locally running application and provides a public HTTPS URL.
-
-### Start ngrok
-
-After starting the application, run:
-
-``-powershell
-
+``` powershell
 ngrok http 5173
-
-For demonstration purposes, the Phonebook Application is currently accessible through the following public URL:
-
-🔗 **[Open Phonebook Application](https://quarry-bankroll-juicy.ngrok-free.dev/)**
-
- **Note:** This is a temporary ngrok URL and is accessible only while the ngrok tunnel is running. The URL may change when the tunnel is restarted.
----
-
-
-
-# 14. API Testing
-
-The REST APIs can be tested through Swagger UI.
-
-Open:
-
-```text
-http://localhost:8000/docs
-
-### Create Contact
-
-```http
-POST /contacts/
 ```
 
-Example request:
+ngrok provides a temporary HTTPS URL for demonstrations. The URL can
+change when the tunnel is restarted.
 
-```json
-{
-  "name": "Rahul Sharma",
-  "phone_number": "+919876543210",
-  "email": "rahul@gmail.com",
-  "address": "Mumbai"
-}
+## Testing
+
+Playwright end-to-end tests are stored in:
+
+``` text
+tests/
 ```
 
-### Retrieve Contacts
+Install dependencies:
 
-```http
-GET /contacts/
+``` powershell
+npm install
 ```
 
-### Retrieve Contact
+Run the configured Playwright test command from `package.json`.
 
-```http
-GET /contacts/{id}
-```
+## Functional Verification
 
-### Update Contact
+The migrated application has been functionally verified for:
 
-```http
-PUT /contacts/{id}
-```
+-   Login and JWT authentication
+-   CORS
+-   Contact list
+-   Contact details
+-   Create
+-   Update
+-   Delete
+-   Search
+-   Pagination
+-   PostgreSQL persistence
+-   Dockerized Java backend
+-   Frontend integration
+-   ngrok public access
 
-### Delete Contact
+## Database Persistence
 
-```http
-DELETE /contacts/{id}
-```
+Normal shutdown:
 
----
-
-# 15. End-to-End Testing
-
-The application should be tested from both the API and UI layers.
-
-### Create Contact
-
-1. Open the frontend.
-2. Enter contact information.
-3. Submit the form.
-4. Verify that the contact appears in the contact list.
-5. Verify that the data is persisted in PostgreSQL.
-
-### View Contact
-
-1. Select a contact.
-2. Open the detail page.
-3. Verify ID, name, phone number, email, and address.
-
-### Update Contact
-
-1. Open an existing contact.
-2. Select Update.
-3. Modify the information.
-4. Save the changes.
-5. Verify the updated data.
-
-### Delete Contact
-
-1. Select Delete.
-2. Confirm the deletion.
-3. Verify that the contact is removed from the UI and database.
-
----
-
-# 16. Docker Troubleshooting
-
-Check running containers:
-
-```powershell
-docker compose ps
-```
-
-View backend logs:
-
-```powershell
-docker compose logs backend
-```
-
-View frontend logs:
-
-```powershell
-docker compose logs frontend
-```
-
-View database logs:
-
-```powershell
-docker compose logs db
-```
-
-Follow backend logs in real time:
-
-```powershell
-docker compose logs -f backend
-```
-
----
-
-# 17. Database Persistence
-
-PostgreSQL uses a Docker named volume for persistent storage.
-
-```text
-PostgreSQL Container
-        │
-        ▼
-  Docker Volume
-        │
-        ▼
-Persistent Contact Data
-```
-
-Restart services:
-
-```powershell
-docker compose restart
-```
-
-The previously stored contacts should remain available.
-
-To completely remove containers and database volume:
-
-```powershell
-docker compose down -v
-```
-
-> **Warning:** Removing the volume deletes the stored PostgreSQL data.
-
----
-
-# 18. Stopping the Application
-
-Stop the application:
-
-```powershell
+``` powershell
 docker compose down
 ```
 
-The Docker images and persistent database volume remain available for the next startup.
+This keeps the PostgreSQL named volume.
 
----
+To remove the database volume:
 
-
-# 19. Future Enhancements
-
-The current architecture can be extended with:
-
-* Advanced filtering
-* Authentication and authorization
-* Unit testing
-* Integration testing
-* Logging
-* CI/CD pipeline
-* Cloud deployment
-
-
-These improvements can be introduced without changing the fundamental frontend → backend → database architecture.
-
----
-
-# 20. Project Deliverables
-
-The project includes:
-
-* Vue.js 3 frontend
-* FastAPI backend
-* PostgreSQL database
-* SQLAlchemy ORM
-* Vue Router
-* Axios integration
-* RESTful CRUD APIs
-* Swagger/OpenAPI documentation
-* Dockerfile for frontend
-* Dockerfile for backend
-* Docker Compose configuration
-* PostgreSQL persistence
-* Environment configuration
-* API testing
-* End-to-end testing
-* Project documentation
-
----
-
-# 21. Final Architecture
-
-```text
-                         USER
-                           │
-                           ▼
-                  ┌─────────────────┐
-                  │   Vue.js 3 UI   │
-                  └────────┬────────┘
-                           │
-                        Axios
-                           │
-                           ▼
-                  ┌─────────────────┐
-                  │     FastAPI     │
-                  │    REST API     │
-                  └────────┬────────┘
-                           │
-                       SQLAlchemy
-                           │
-                           ▼
-                  ┌─────────────────┐
-                  │   PostgreSQL    │
-                  │    Database     │
-                  └─────────────────┘
-
-                 All services run using
-                  Docker + Compose
+``` powershell
+docker compose down -v
 ```
 
-## Conclusion
+> Warning: `docker compose down -v` deletes the persisted PostgreSQL
+> data.
 
-The Phonebook Application demonstrates a complete full-stack application lifecycle—from frontend interaction and REST API communication to database persistence and containerized deployment.
+## Migration: Python to Java
 
-The project is structured to provide a clean separation between application layers while remaining easy to develop, test, run, and extend.
+The original backend architecture was:
+
+``` text
+Vue.js
+   |
+FastAPI / Python
+   |
+SQLAlchemy
+   |
+PostgreSQL
+```
+
+The active backend architecture is now:
+
+``` text
+Vue.js
+   |
+Spring Boot / Java
+   |
+Spring Security + JWT
+   |
+Spring Data JPA / Hibernate
+   |
+PostgreSQL
+```
+
+The migration preserves the phonebook application's core CRUD, search,
+pagination, authentication, and persistence functionality.
+
+## Final Architecture
+
+``` text
+Internet
+   |
+   v
+ngrok HTTPS URL
+   |
+   v
+Vue.js Frontend :5173
+   |
+   v
+Spring Boot Backend :8000
+   |
+   v
+PostgreSQL :5432
+```
+
+Docker Compose manages the application services.
+
+## Project Status
+
+The Python-to-Java backend migration is complete. The Java backend,
+Docker deployment, PostgreSQL integration, JWT authentication, frontend
+integration, CRUD operations, search, pagination, and public ngrok flow
+have been tested successfully.

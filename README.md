@@ -351,7 +351,7 @@ The application uses three main services:
 
 | Service | Technology | Port |
 |---|---|---|
-| frontend | Vue.js / Vite | 5173 |
+| frontend | Vue.js / Vite | 5174 |
 | backend | Spring Boot / Java 21 | 8000 |
 | db | PostgreSQL 16 | 5432 |
 
